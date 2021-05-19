@@ -7,3 +7,5 @@ positions:
   
 clients:
   - url: #LOKI_URL#
+
+scrape_configs:

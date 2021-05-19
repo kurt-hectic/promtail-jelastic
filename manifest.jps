@@ -17,7 +17,16 @@ settings:
     - type: string
       caption: installation directory
       name: idir
-      default: /opt/promtail3
+      default: /opt/promtail
+    - type: list
+      caption: type of logfile
+      values:
+        value1: apache
+        value2: mysql
+        value3: ngnix
+    hideLabel: false
+    hidden: false
+    editable: false
 
 onInstall:
   - cmd[${targetNodes.nodeGroup}]: |-
@@ -47,3 +56,18 @@ onInstall:
       systemctl start promtail.service
       
     user: root
+    
+    
+onUninstall:
+  cmd[${targetNodes.nodeGroup}]: |-
+      SED=$(which sed)
+      systemctl stop promtail.service
+      $SED -i "|/etc/promtail-local-config.yaml|d" /etc/jelastic/redeploy.conf
+      $SED -i "|${settings.idir}/positions.yaml|d" /etc/jelastic/redeploy.conf
+      usermod -G "" promtail
+      userdel promtail
+      rm -rf ${settings.idir}
+      rm /etc/systemd/system/promtail.service
+      rm /etc/promtail-local-config.yaml
+      systemctl daemon-reload
+  user: root
