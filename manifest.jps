@@ -1,0 +1,48 @@
+type: update
+name: install promtail
+
+targetNodes:
+  nodeGroup: '*'
+
+settings:
+  fields:
+    - type: string
+      caption: location of loki push api
+      name: lokiurl
+      default: http://localhost:3100/loki/api/v1/push 
+    - type: string
+      caption: promtail unix groups (comma separated)
+      name: unixgroups
+      default: apache
+    - type: string
+      caption: installation directory
+      name: idir
+      default: /opt/promtail3
+
+onInstall:
+  - cmd[${targetNodes.nodeGroup}]: |-
+      $RAW_REPO_CONFIG_URL="https://raw.githubusercontent.com/kurt-hectic/promtail-jelastic/master/configs/"
+      WGET=$(which wget)
+      GREP=$(which grep)
+      useradd --system promtail,
+      IFS=';' read -ra GROUPS <<< "${settings.unixgroups}" 
+      for i in "${GROUPS[@]}"; do usermod -a -G $i promtail ; done     
+      mkdir -p ${settings.idir}
+      chown promtail ${settings.idir}
+      cd ${settings.idir}
+      curl -s https://api.github.com/repos/grafana/loki/releases/latest | $GREP browser_download_url |  cut -d '"' -f 4 | $GREP promtail-linux-amd64.zip | $WGET -i -
+      unzip promtail-linux-amd64.zip
+      mv promtail-linux-amd64 promtail
+      chmod +x promtail
+      rm promtail-linux-amd64.zip     
+      echo /etc/promtail-local-config.yaml >> /etc/jelastic/redeploy.conf
+      echo ${settings.idir}/positions.yaml >> /etc/jelastic/redeploy.conf
+      $WGET --no-check-certificate $RAW_REPO_CONFIG_URL/promtail.service -O /etc/systemd/system/promtail.service
+      $WGET --no-check-certificate $RAW_REPO_CONFIG_URL/promtail-local-config.yaml -O /etc/promtail-local-config.yaml
+      for file in /etc/systemd/system/promtail.service /etc/promtail-local-config.yaml; do sed -i 's/#PROMTAIL_HOME#/${settings.idir}/g' file; done
+      sed -i 's/#LOKI_URL#/${settings.lokiurl}/g' /etc/promtail-local-config.yaml      
+      chown -R promtail ${settings.idir}
+      systemctl daemon-reload
+      systemctl start promtail.service
+      
+    user: root
