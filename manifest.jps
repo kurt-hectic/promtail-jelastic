@@ -21,10 +21,11 @@ settings:
 
 onInstall:
   - cmd[${targetNodes.nodeGroup}]: |-
-      $RAW_REPO_CONFIG_URL="https://raw.githubusercontent.com/kurt-hectic/promtail-jelastic/master/configs/"
+      RAW_REPO_CONFIG_URL=https://raw.githubusercontent.com/kurt-hectic/promtail-jelastic/master/configs
       WGET=$(which wget)
       GREP=$(which grep)
-      useradd --system promtail,
+      SED=$(which sed)
+      id -u promtail &>/dev/null || useradd --system promtail
       IFS=';' read -ra GROUPS <<< "${settings.unixgroups}" 
       for i in "${GROUPS[@]}"; do usermod -a -G $i promtail ; done     
       mkdir -p ${settings.idir}
@@ -35,12 +36,12 @@ onInstall:
       mv promtail-linux-amd64 promtail
       chmod +x promtail
       rm promtail-linux-amd64.zip     
-      echo /etc/promtail-local-config.yaml >> /etc/jelastic/redeploy.conf
-      echo ${settings.idir}/positions.yaml >> /etc/jelastic/redeploy.conf
+      grep '/etc/promtail-local-config.yaml' /etc/jelastic/redeploy.conf &>/dev/null || echo /etc/promtail-local-config.yaml >> /etc/jelastic/redeploy.conf
+      grep '${settings.idir}/positions.yaml' /etc/jelastic/redeploy.conf &>/dev/null || echo ${settings.idir}/positions.yaml >> /etc/jelastic/redeploy.conf
       $WGET --no-check-certificate $RAW_REPO_CONFIG_URL/promtail.service -O /etc/systemd/system/promtail.service
       $WGET --no-check-certificate $RAW_REPO_CONFIG_URL/promtail-local-config.yaml -O /etc/promtail-local-config.yaml
-      for file in /etc/systemd/system/promtail.service /etc/promtail-local-config.yaml; do sed -i 's/#PROMTAIL_HOME#/${settings.idir}/g' file; done
-      sed -i 's/#LOKI_URL#/${settings.lokiurl}/g' /etc/promtail-local-config.yaml      
+      for file in /etc/systemd/system/promtail.service /etc/promtail-local-config.yaml; do $SED -i 's|#PROMTAIL_HOME#|${settings.idir}|g' $file; done
+      $SED -i 's|#LOKI_URL#|${settings.lokiurl}|g' /etc/promtail-local-config.yaml      
       chown -R promtail ${settings.idir}
       systemctl daemon-reload
       systemctl start promtail.service

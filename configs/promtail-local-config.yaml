@@ -5,4 +5,4 @@ server:
 positions:
   filename: #PROMTAIL_HOME#/positions.yaml
   clients:
-  - url: #LOKI_URL#
+    - url: #LOKI_URL#
