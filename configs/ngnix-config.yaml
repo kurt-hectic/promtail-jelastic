@@ -29,5 +29,5 @@
        - localhost
        labels:
         job: ngnix-error
-        __path__:  /var/log/ngnix/{localhost.error_log,error_log}
+        __path__:  /var/log/ngnix/{localhost.error,error}_log
 

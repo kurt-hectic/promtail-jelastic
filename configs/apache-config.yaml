@@ -13,7 +13,7 @@
        - localhost
        labels:
         job: apache-access
-        __path__:  /var/log/httpd/{access,dummy-host.jelastic.com-access}.log
+        __path__:  /var/log/httpd/{access,dummy-host.jelastic.com-access}_log
   - job_name: apache-error
     pipeline_stages:
     - regex:
@@ -28,5 +28,5 @@
        - localhost
        labels:
         job: apache-error
-        __path__:  /var/log/httpd/{error,dummy-host.jelastic.com-error}.log
+        __path__:  /var/log/httpd/{error,dummy-host.jelastic.com-error}_log
         
