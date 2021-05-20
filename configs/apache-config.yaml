@@ -13,7 +13,6 @@
        - localhost
        labels:
         job: apache-access
-        host: oscar-app
         __path__:  /var/log/httpd/{access,dummy-host.jelastic.com-access}.log
   - job_name: apache-error
     pipeline_stages:
@@ -29,6 +28,5 @@
        - localhost
        labels:
         job: apache-error
-        host: oscar-app
         __path__:  /var/log/httpd/{error,dummy-host.jelastic.com-error}.log
         

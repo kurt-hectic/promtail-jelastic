@@ -27,7 +27,7 @@ settings:
         value3: ngnix
       hideLabel: false
       hidden: false
-      editable: false
+      editable: true
 
 onInstall:
   - cmd[${targetNodes.nodeGroup}]: |-
@@ -50,9 +50,9 @@ onInstall:
       grep '${settings.idir}/positions.yaml' /etc/jelastic/redeploy.conf &>/dev/null || echo ${settings.idir}/positions.yaml >> /etc/jelastic/redeploy.conf
       $WGET --no-check-certificate $RAW_REPO_CONFIG_URL/promtail.service -O /etc/systemd/system/promtail.service
       $WGET --no-check-certificate $RAW_REPO_CONFIG_URL/promtail-local-config.yaml -O /etc/promtail-local-config.yaml
-      if ! [ -z "${settings.logtype}" ]; then $WGET --no-check-certificate -qO - $RAW_REPO_CONFIG_URL/${settings.logtype}-config.yaml >>  /etc/promtail-local-config.yaml
       for file in /etc/systemd/system/promtail.service /etc/promtail-local-config.yaml; do $SED -i 's|#PROMTAIL_HOME#|${settings.idir}|g' $file; done
       $SED -i 's|#LOKI_URL#|${settings.lokiurl}|g' /etc/promtail-local-config.yaml      
+      if ! [ -z "${settings.logtype}" ]; then $WGET --no-check-certificate -qO - $RAW_REPO_CONFIG_URL/${settings.logtype}-config.yaml &>> /etc/promtail-local-config.yaml; fi
       chown -R promtail ${settings.idir}
       systemctl daemon-reload
       systemctl start promtail.service

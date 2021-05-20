@@ -1,0 +1,15 @@
+  - job_name: mysqld
+    pipeline_stages:
+    - regex:
+        expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2}) (?P<pid>\d+) (?P<level>\[[^\]]+\]) (?P<message>.*)$'
+    - timestamp:
+          source: timestamp
+          format: "2006-01-02 15:04:05"
+    - labels:
+        level:
+    static_configs:
+     - targets:
+       - localhost
+       labels:
+        job: mysqld
+        __path__:  /var/log/mysql/mysqld.log
