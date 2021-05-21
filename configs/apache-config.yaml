@@ -1,23 +1,7 @@
-  - job_name: apache-access
-    pipeline_stages:
-    - regex:
-        expression: '^(?P<ip>\S+) (?P<identd>\S+) (?P<user>\\S+) \[(?P<timestamp>[\w:/]+\s[+\-]\d{4})\] \"(?P<action>\S+)\s?(?P<path>\S+)?\s?(?P<protocol>\S+)?\" (?P<status_code>\d{3}|-) (?P<size>\d+|-)\s?\"?(?P<referer>[^\"]*)\"?\s?\"?(?P<useragent>[^\"]*)?\"?$'
-    - timestamp:
-          source: timestamp
-          format: "02/Jan/2006:15:04:05 -0700"
-    - labels:
-        action:
-        status_code:
-    static_configs:
-     - targets:
-       - localhost
-       labels:
-        job: apache-access
-        __path__:  /var/log/httpd/{access,dummy-host.jelastic.com-access}_log
   - job_name: apache-error
     pipeline_stages:
     - regex:
-        expression: '^(?P<timestamp>\[[^\]]+\]) (?P<level>\[[^\]]+\]) (?P<pid>\[[^\]]+\]) (?P<message>.*)$'
+        expression: '^\[(?P<timestamp>[^\]]+)\] \[(?P<level>[^\]]+)\] \[(?P<pid>[^\]]+)\] (?P<message>.*)$'
     - timestamp:
           source: timestamp
           format: "Mon Jan 02 15:04:05.000000 2006"
@@ -29,4 +13,19 @@
        labels:
         job: apache-error
         __path__:  /var/log/httpd/{error,dummy-host.jelastic.com-error}_log
-        
+  - job_name: apache-access
+    pipeline_stages:
+    - regex:
+        expression: '^(?P<ip>\S+) (?P<identd>\S+) (?P<user>\S+) \[(?P<timestamp>[\w:/]+\s[+\-]\d{4})\] \"(?P<action>\S+)\s?(?P<path>\S+)?\s?(?P<protocol>\S+)?\" (?P<status_code>\d{3}|-) (?P<size>\d+|-)\s?\"?(?P<referer>[^\"]*)\"?\s?\"?(?P<useragent>[^\"]*)?\"?$'
+    - labels:
+        action:
+        status_code:
+    - timestamp:
+          source: timestamp
+          format: "02/Jan/2006:15:04:05 -0700"
+    static_configs:
+     - targets:
+       - localhost
+       labels:
+        job: apache-access
+        __path__:  /var/log/httpd/{access,dummy-host.jelastic.com-access}_log

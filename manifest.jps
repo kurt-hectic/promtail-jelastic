@@ -24,7 +24,7 @@ settings:
       values:
         apache: apache
         mysql: mysql
-        ngnix: ngnix
+        ngnix: nginx
       hideLabel: false
       hidden: false
       editable: true
@@ -36,11 +36,11 @@ onInstall:
       GREP=$(which grep)
       SED=$(which sed)
       id -u promtail &>/dev/null || useradd --system promtail
-      IFS=';' read -ra GROUPS <<< "${settings.unixgroups}" 
-      if ! [ -z "${settings.logtype}" ]; then for i in "${GROUPS[@]}"; do usermod -a -G $i promtail ; done ; fi
-      if [ -eq "${settings.logtype}" "apache" ]; then chmod g+r /var/log/httpd ; fi
-      if [ -eq "${settings.logtype}" "ngnix" ]; then chmod g+r /var/log/ngnix ; fi
-      if [ -eq "${settings.logtype}" "mysql" ]; then chmod g+r /var/log/mysqld ; fi
+      IFS=',' read -ra UGRP<<< "${settings.unixgroups}" 
+      if ! [ -v "${settings.unixgroups}" ]; then for g in "${UGRP[@]}"; do usermod -a -G $g promtail ; done ; fi
+      if [ "${settings.logtype}" = "apache" ]; then chmod g+rx /var/log/httpd ; fi
+      if [ "${settings.logtype}" = "nginx" ]; then chmod g+rx /var/log/ngnix ; fi
+      if [ "${settings.logtype}" = "mysql" ]; then chmod g+rx /var/log/mysqld ; fi
       mkdir -p ${settings.idir}
       chown promtail ${settings.idir}
       cd ${settings.idir}
