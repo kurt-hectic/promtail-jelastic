@@ -39,7 +39,7 @@ onInstall:
       IFS=',' read -ra UGRP<<< "${settings.unixgroups}" 
       if ! [ -v "${settings.unixgroups}" ]; then for g in "${UGRP[@]}"; do usermod -a -G $g promtail ; done ; fi
       if [ "${settings.logtype}" = "apache" ]; then chmod g+rx /var/log/httpd ; fi
-      if [ "${settings.logtype}" = "nginx" ]; then chmod g+rx /var/log/ngnix ; fi
+      if [ "${settings.logtype}" = "nginx" ]; then chmod g+rx /var/log/nginx ; fi
       if [ "${settings.logtype}" = "mysql" ]; then chmod g+rx /var/log/mysqld ; fi
       mkdir -p ${settings.idir}
       chown promtail ${settings.idir}
@@ -57,6 +57,7 @@ onInstall:
       $SED -i 's|#LOKI_URL#|${settings.lokiurl}|g' /etc/promtail-local-config.yaml      
       if ! [ -z "${settings.logtype}" ]; then $WGET --no-check-certificate -qO - $RAW_REPO_CONFIG_URL/${settings.logtype}-config.yaml &>> /etc/promtail-local-config.yaml; fi
       chown -R promtail ${settings.idir}
+	  systemctl enable promtail.service
       systemctl daemon-reload
       systemctl start promtail.service
       
