@@ -12,7 +12,22 @@
        - localhost
        labels:
         job: apache-error
-        __path__:  /var/log/httpd/{error,dummy-host.jelastic.com-error}_log
+        __path__:  /var/log/httpd/error_log
+  - job_name: apache-vhost-error
+    pipeline_stages:
+    - regex:
+        expression: '^\[(?P<timestamp>[^\]]+)\] \[(?P<level>[^\]]+)\] \[(?P<pid>[^\]]+)\] \[(?P<client>[^\]]+)\] (?P<message>.*)$'
+    - timestamp:
+          source: timestamp
+          format: "Mon Jan 02 15:04:05.000000 2006"
+    - labels:
+        level:
+    static_configs:
+     - targets:
+       - localhost
+       labels:
+        job: apache-error
+        __path__:  /var/log/httpd/dummy-host.jelastic.com-error_log
   - job_name: apache-access
     pipeline_stages:
     - regex:
